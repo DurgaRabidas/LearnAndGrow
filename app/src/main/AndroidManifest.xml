@@ -21,6 +21,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MemoryManagerActivity" android:exported="false" />
+        <activity
+            android:name=".MemoryManagerActivity"
+            android:exported="false" />
     </application>
 </manifest>
