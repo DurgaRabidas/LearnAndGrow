@@ -1,28 +1,63 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://android.com">
+name: Build Learn and Grow APK
 
-    <application
-        android:allowBackup="true"
-        android:label="Learn &amp; Grow"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="application/pdf" />
-            </intent-filter>
-        </activity>
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-        <activity
-            android:name=".MemoryManagerActivity"
-            android:exported="false" />
-    </application>
-</manifest>
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Write Clean AndroidManifest
+        run: |
+          mkdir -p app/src/main
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://android.com">
+              <application
+                  android:allowBackup="true"
+                  android:label="Learn &amp; Grow"
+                  android:supportsRtl="true"
+                  android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                      <intent-filter>
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <data android:mimeType="application/pdf" />
+                      </intent-filter>
+                  </activity>
+                  <activity
+                      android:name=".MemoryManagerActivity"
+                      android:exported="false" />
+              </application>
+          </manifest>
+          EOF
+
+      - name: Build Debug APK
+        run: gradle assembleDebug
+
+      - name: Upload LearnAndGrow APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LearnAndGrow-APK
+          path: app/build/outputs/apk/debug/*.apk
